@@ -12,3 +12,23 @@ yield return StartCoroutine(rf.Download));
 // rf is now available, it was streamed, or skipped 
 ```
 Simple but powerful. Our class is going to be responsible for downloading files as well as comparing to local files to see if an update is needed. Everything loads in an asynch maner, so no blocking is done. With that, lets check out what the RemoteFile class will actually look like.
+```
+public class RemoteFile {
+	protected string mRemoteFile;
+	protected string mLocalFile;
+	protected System.DateTime mRemoteLastModified;
+	protected System.DateTime mLocalLastModified;
+	protected long mRemoteFileSize =  0;
+	protected HttpWebResponse mAsynchResponse = null;
+	protected AssetBundle mBundle = null;
+	
+	public RemoteFile(string remoteFile, string localFile);
+	public AssetBundle LocalBundle;
+	public bool IsOutdated;
+	public IEnumerator Download();
+  protected void AsynchCallback(IAsyncResult result);
+  public IEnumerator LoadLocalBundle();
+  public void UnloadLocalBundle();
+}
+```
+```mRemoteFile``` and ```mLocalFile``` are string that point to the remote files url, and desired local copy. In order to determine weather a file has a newer version on the server we need to keep track of when the file was last modified, this is what ```mRemoteLastModified``` and ```mLocalLastModified``` are for. Because we will support resuming downloads, we need to store the size of the remote file in the ```mRemoteFileSize``` variable. A copy of HttpWebResponse is kept in the variable ```mAsynchResponse``` so we can monitor when the remote file has been downloaded. ```mBundle``` is a conveniance variable that points to the local copy of the asset bundle.
