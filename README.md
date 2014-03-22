@@ -22,13 +22,34 @@ public class RemoteFile {
 	protected HttpWebResponse mAsynchResponse = null;
 	protected AssetBundle mBundle = null;
 	
-	public RemoteFile(string remoteFile, string localFile);
 	public AssetBundle LocalBundle;
 	public bool IsOutdated;
+	public RemoteFile(string remoteFile, string localFile);
 	public IEnumerator Download();
-  protected void AsynchCallback(IAsyncResult result);
-  public IEnumerator LoadLocalBundle();
-  public void UnloadLocalBundle();
+	protected void AsynchCallback(IAsyncResult result);
+	public IEnumerator LoadLocalBundle();
+	public void UnloadLocalBundle();
 }
 ```
 ```mRemoteFile``` and ```mLocalFile``` are string that point to the remote files url, and desired local copy. In order to determine weather a file has a newer version on the server we need to keep track of when the file was last modified, this is what ```mRemoteLastModified``` and ```mLocalLastModified``` are for. Because we will support resuming downloads, we need to store the size of the remote file in the ```mRemoteFileSize``` variable. A copy of HttpWebResponse is kept in the variable ```mAsynchResponse``` so we can monitor when the remote file has been downloaded. ```mBundle``` is a conveniance variable that points to the local copy of the asset bundle.
+
+##LocalBundle
+```LocalBundle``` is a conveniant accessor for the ```mBundle``` variable
+```
+public AssetBundle LocalBundle {
+	get {
+		return mBundle;
+	}
+}
+```
+##IsOutdated
+```IsOutdated``` is an accessor that compares the last modified time of the server file to the last modified time of the local file. If the server was modified after the local file, our local copy is outdated and needs to be redownloaded. If the server does not support returning this data (more on that in the constructor) then ```IsOutdated``` will always be true.
+```
+public bool IsOutdated { 
+	get {
+		if (File.Exists(mLocalFile))
+			return mRemoteLastModified > mLocalLastModified;
+		return true;
+	}
+}
+```
