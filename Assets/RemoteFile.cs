@@ -71,7 +71,7 @@ public class RemoteFile {
 		request.Timeout = 30000; 
 		request.AddRange((int)localFileSize, (int)mRemoteFileSize - 1);
 		request.Method = WebRequestMethods.Http.Post;
-		mAsynchResponse = (HttpWebResponse)request.GetResponse();
+		request.BeginGetResponse(AsynchCallback, request);
 
 		while (mAsynchResponse == null) // Wait for asynch to finish
 			yield return null;
