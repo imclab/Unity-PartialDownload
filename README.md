@@ -126,6 +126,7 @@ public IEnumerator Download() {
 }
 ```
 It's important to remember that this is a coroutine. If called from another class be sure to call it as such.
+While ```IsOutdated``` is made public, you don't need to worry about checking it. The ```Download``` function will early out and not download if not needed.
 ####AsynchCallback
 The ```AsynchCallback``` Gets called from the ```BeginResponse``` method when it's ready. The reques was passed into the ```BeginResponse``` method, it will be forwarded to the ```AsynchCallback``` callback. From there we can get the ```HttpWebResponse``` and let the ```Download``` function finish executing.
 ```
@@ -142,3 +143,75 @@ protected void AsynchCallback(IAsyncResult result) {
 	Debug.Log("Download compleate");
 }
 ```
+####LoadLocalBundle
+```LoadLocalBundle``` is a utility function to load the asset bundle we downloaded from disk. The only thing to note here is that in order to load the file from disk with the ```WWW``` class we must add _"file://"_ to the begenning.
+```
+// Don't forget to start this as a coroutine!
+public IEnumerator LoadLocalBundle() { 
+	WWW loader = new WWW("file://" + mLocalFile);
+	yield return loader;
+	if (loader.error != null)
+		throw new Exception("Loading error:" + loader.error);
+	mBundle = loader.assetBundle;
+}
+```
+####UnloadLocalBundle
+This is the counter to ```LoadLocalBundle```
+```
+public void UnloadLocalBundle() {
+	if (mBundle != null)
+		mBundle.Unload (false);
+	mBundle = null;
+}
+```
+##Testing
+The last thing to do is to test the code, i made a quick utility class for this
+```
+using System;
+using UnityEngine;
+using System.Collections;
+
+public class test : MonoBehaviour {
+	string asset1Url = "http://url.com/Axe.assetbundle";
+	string asset2Url = "http://url.com/Cart.assetbundle";
+	bool asset1Imported = false;
+	bool asset2Imported = false;
+
+	string CacheDirectory {
+		get {
+			#if UNITY_EDITOR
+			return Application.persistentDataPath + "/";
+			#elif UNITY_IPHONE			
+			string fileNameBase = Application.dataPath.Substring(0, Application.dataPath.LastIndexOf('/'));
+			return fileNameBase.Substring(0, fileNameBase.LastIndexOf('/')) + "/Documents/";
+			#elif UNITY_ANDROID
+			return Application.persistentDataPath + "/";
+			#else
+			return Application.dataPath + "/";
+			#endif
+		}
+	}
+
+	void OnGUI() {
+		GUILayout.Label("Asset path: " + CacheDirectory);
+
+		if (!asset1Imported && GUILayout.Button ("Import Axe")) {
+			StartCoroutine (InstantiateAsset(asset1Url, CacheDirectory + "axe.assetbundle"));
+			asset1Imported = true;
+		}
+		if (!asset2Imported && GUILayout.Button ("Import Cart")) {
+			StartCoroutine (InstantiateAsset(asset2Url, CacheDirectory + "cart.assetbundle"));
+			asset2Imported = true;
+		}
+	}
+
+	IEnumerator InstantiateAsset(string remoteAsset, string localFile) {
+		RemoteFile rf = new RemoteFile(remoteAsset, localFile);
+		yield return StartCoroutine(rf.Download());
+		yield return StartCoroutine(rf.LoadLocalBundle());
+		Instantiate(rf.LocalBundle.mainAsset);
+		rf.UnloadLocalBundle ();
+	}
+}
+```
+##What next?
