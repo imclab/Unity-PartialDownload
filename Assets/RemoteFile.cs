@@ -91,6 +91,7 @@ public class RemoteFile {
 		inStream.Close();
 		request.Abort();
 		mAsynchResponse.Close();
+		mAsynchResponse = null;
 	}
 
 	// Throwind an exception here will not propogate to unity!
