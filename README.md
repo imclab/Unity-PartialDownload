@@ -80,3 +80,48 @@ public RemoteFile(string remoteFile, string localFile) {
 }
 ```
 ####Download
+The ```Download``` coroutine will download the desired file using an ```HttpWebRequest```. Unlike hte ```Constructor``` we can't use the ```GetResponse``` method because ```GetResponse``` is a blocking call. In order to go full asynch the WebRequest class contains a ```BeginGetResponse``` method. ```BeginGetResponse``` takes two arguments, a callback in our case its the ```AsynchCallback``` method and a user object, which will be the response it's self. Once the download is compleate we just write the result of the stream to disk.
+```
+// It's the callers responsibility to start this as a coroutine!
+public IEnumerator Download() { 
+	int bufferSize = 1024 * 1000;
+	long localFileSize = (File.Exists(mLocalFile))? (new FileInfo(mLocalFile)).Length : 0;
+
+	if (localFileSize == mRemoteFileSize && !IsOutdated) {
+		Debug.Log("File already cacled, not downloading");
+		yield break; // We already have the file, early out
+	}
+	else if (localFileSize > mRemoteFileSize || IsOutdated) {
+		if (!IsOutdated) Debug.LogWarning("Local file is larger than remote file, but not outdated. PANIC!");
+		if (IsOutdated) Debug.Log("Local file is outdated, deleting");
+		if (File.Exists(mLocalFile))
+			File.Delete(mLocalFile);
+		localFileSize = 0;
+	}
+
+	HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(mRemoteFile);
+	request.Timeout = 30000; 
+	request.AddRange((int)localFileSize, (int)mRemoteFileSize - 1);
+	request.Method = WebRequestMethods.Http.Post;
+	request.BeginGetResponse(AsynchCallback, request);
+
+	while (mAsynchResponse == null) // Wait for asynch to finish
+		yield return null;
+
+	Stream inStream = mAsynchResponse.GetResponseStream();
+	FileStream outStream = new FileStream(mLocalFile, (localFileSize > 0)? FileMode.Append : FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
+
+	int count = 0;
+	byte[] buff = new byte[bufferSize]; 
+	while ((count = inStream.Read(buff, 0, bufferSize)) > 0) {
+		outStream.Write(buff, 0, count);
+		outStream.Flush();
+		yield return null;
+	}
+
+	outStream.Close();
+	inStream.Close();
+	request.Abort();
+	mAsynchResponse.Close();
+}
+```
