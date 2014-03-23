@@ -56,3 +56,27 @@ public bool IsOutdated {
 	}
 }
 ```
+####Constructor
+The ```Constructor``` takes two strings, the url of the remote file to load, and the path of the local file where the remote file should be saved. The ```Constructor``` is responsible for getting the _last_ _modified_ times for the remote and local file, it also gets the _size_ _in_ _bytes_ of the remote file. We get information about the remote file trough an ```HttpWebRequest``` with it's content type set to _HEAD_. Setting the content type to _HEAD_ ensures that we only get header data, not the whole file.
+```
+public RemoteFile(string remoteFile, string localFile) {
+	mRemoteFile = remoteFile;
+	mLocalFile = localFile;
+
+	HttpWebRequest request = (HttpWebRequest)WebRequest.Create(remoteFile);
+	request.Method = "HEAD"; // Only the header info, not full file!
+
+	// Get response will throw WebException if file is not found
+	HttpWebResponse resp = (HttpWebResponse)request.GetResponse();
+	mRemoteLastModified = resp.LastModified;
+	mRemoteFileSize = resp.ContentLength;
+
+	resp.Close();
+
+	if (File.Exists(mLocalFile)) {
+		// This will not work in web player!
+		mLocalLastModified = File.GetLastWriteTime(mLocalFile);
+	}
+}
+```
+####Download
