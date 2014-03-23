@@ -57,7 +57,7 @@ public bool IsOutdated {
 }
 ```
 ####Constructor
-The ```Constructor``` takes two strings, the url of the remote file to load, and the path of the local file where the remote file should be saved. The ```Constructor``` is responsible for getting the _last_ _modified_ times for the remote and local file, it also gets the _size_ _in_ _bytes_ of the remote file. We get information about the remote file trough an ```HttpWebRequest``` with it's content type set to _HEAD_. Setting the content type to _HEAD_ ensures that we only get header data, not the whole file.
+The ```Constructor``` takes two strings, the url of the remote file to load, and the path of the local file where the remote file should be saved. The ```Constructor``` is responsible for getting the _last_ _modified_ times for the remote and local file, it also gets the _size_ _in_ _bytes_ of the remote file. We get information about the remote file trough an ```HttpWebRequest``` with it's content type set to _HEAD_. Setting the content type to _HEAD_ ensures that we only get header data, not the whole file. _Its worth noting, hosts like dropbox don't support the last modified information_.
 ```
 public RemoteFile(string remoteFile, string localFile) {
 	mRemoteFile = remoteFile;
@@ -215,3 +215,4 @@ public class test : MonoBehaviour {
 }
 ```
 ##What next?
+It may seem like the hard part is out of the way, but really this was the easy part. It's up to you to come up with an efficient strategy for managing asset bundles. The real work is in making the system that manages bundles and the memory associated with them. To keep memory sane, download a bundle, load it into memory, instantiate any needed game objects and unload the bundle.
