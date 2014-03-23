@@ -125,3 +125,20 @@ public IEnumerator Download() {
 	mAsynchResponse.Close();
 }
 ```
+It's important to remember that this is a coroutine. If called from another class be sure to call it as such.
+####AsynchCallback
+The ```AsynchCallback``` Gets called from the ```BeginResponse``` method when it's ready. The reques was passed into the ```BeginResponse``` method, it will be forwarded to the ```AsynchCallback``` callback. From there we can get the ```HttpWebResponse``` and let the ```Download``` function finish executing.
+```
+// Throwind an exception here will not propogate to unity!
+protected void AsynchCallback(IAsyncResult result) {
+	if (result == null) Debug.LogError("Asynch result is null!");
+
+	HttpWebRequest webRequest = (HttpWebRequest)result.AsyncState;
+	if (webRequest == null) Debug.LogError("Could not cast to web request");
+
+	mAsynchResponse = webRequest.EndGetResponse(result) as HttpWebResponse;
+	if (mAsynchResponse == null) Debug.LogError("Asynch response is null!");
+
+	Debug.Log("Download compleate");
+}
+```
