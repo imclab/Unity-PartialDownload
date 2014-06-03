@@ -1,3 +1,6 @@
+##About
+This project is intended to help with downloading large files, especially over unstable network connections. It allows for files to be downloaded only in part, then resumed later. The project is built using Unity3D v4.3. To test, drag the ```test.cs``` script onto the main camera of a scene.
+
 ##The Problem
 I keep working with mobile games built using Unity, most of which have a target executable size of 50MB. These games however  tend to have more than 50MB worth of assets, so they pack content up into asset bundles, and download them later using Unity’s WWW class. At this point these games all run into the same problem. On a flaky mobile network downloading a 2MB file can be a challenge, often the download is disrupted or worse yet the player walks into an underground tunnel (or something like that).
 
