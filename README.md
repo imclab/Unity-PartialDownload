@@ -258,3 +258,6 @@ public class test : MonoBehaviour {
 
 ####What next?
 It may seem like the hard part is out of the way, but really this was the easy part. It's up to you to come up with an efficient strategy for managing asset bundles. The real work is in making the system that manages bundles and the memory associated with them. To keep memory sane, download a bundle, load it into memory, instantiate any needed game objects and unload the bundle.
+
+####Update
+This class was originally designed for an Android game. Porting the game to iOS, i nothiced the Asynch request crashes doe to reflection. I've updated the source (not the article tough) with a workaround.
